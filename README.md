@@ -6,7 +6,7 @@ Enfoque: Arquitectura de Software y Simulación Cinemática
 1. Definición del Sistema
 
 El proyecto consiste en un motor de juego bidimensional desarrollado bajo el paradigma de Programación Orientada a Objetos (POO). 
-Utiliza C++ y la biblioteca dadad por librerias habilitadas por el docente orientador para integrar la gestión de estados en tiempo 
+Utiliza C++ y librerias habilitadas por el docente orientador para integrar la gestión de estados en tiempo 
 real con la interacción asíncrona del usuario.
 
 2. Ejes de Desarrollo (Objetivos Técnicos)
