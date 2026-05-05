@@ -1,25 +1,50 @@
-Resumen Ejecutivo: Alien Invasion como Proyecto final en Informatica II - UdeA -
-Autores: Clayder Areiza Pino & Arlington Zahir Llerena
+# Alien Invasion: Motor de Juego en C++ 🚀
 
-Enfoque: Arquitectura de Software y Simulación Cinemática
+Proyecto final desarrollado para el curso **Informática II (Grupo 003)** de la Facultad de Ingeniería en Telecomunicaciones de la **Universidad de Antioquia**.
 
-1. Definición del Sistema
+## 📝 Descripción
+Este proyecto consiste en la implementación de un motor de juego bidimensional con vista cenital, basado en el paradigma de **Programación Orientada a Objetos (POO)** en C++. El sistema integra un motor de gestión de entidades múltiples (naves, enemigos, proyectiles) y un sistema de control en tiempo real, garantizando la eficiencia en el procesamiento de eventos y lógica de colisiones.
 
-El proyecto consiste en un motor de juego bidimensional desarrollado bajo el paradigma de Programación Orientada a Objetos (POO). 
-Utiliza C++ y librerias habilitadas por el docente orientador para integrar la gestión de estados en tiempo 
-real con la interacción asíncrona del usuario.
+## 👥 Integrantes
+* **Clayder Areiza Pino** - `clayder.areiza@udea.edu.co`
+* **Arlington Zahir Llerena** - `zahir.llerena@udea.edu.co`
 
-2. Ejes de Desarrollo (Objetivos Técnicos)
+## 🏗️ Arquitectura del Sistema
+# Alien Invasion: Motor de Juego en C++
 
-Infraestructura: Implementación de un Main Loop sincrónico y una clase de configuración global (Settings).
+## 1. Descripción del Proyecto
+Este proyecto consiste en el diseño y construcción de un motor de juego bidimensional (con vista cenital) desarrollado en **C++**. El sistema implementa el paradigma de **Programación Orientada a Objetos (POO)** e integra un sistema de control en tiempo real para el usuario, junto con una arquitectura de gestión de entidades múltiples (naves, obstáculos espaciales, proyectiles).
 
-Cinemática de Actores: Modelado de la entidad principal (Naves) y procesamiento de eventos de entrada para el control de movimiento a 
-partir de memoria dinámica y GUI.
+El objetivo principal es garantizar la eficiencia en el procesamiento de eventos, la actualización de estados cinemáticos y la resolución de colisiones mediante lógica booleana, como parte del proyecto final del curso de **Informática II** de la **Universidad de Antioquia**.
 
-Optimización de Memoria: Gestión dinámica de proyectiles con rutinas de eliminación de instancias para preservar recursos.
+## 2. Arquitectura y Módulos
+El proyecto está estructurado de forma modular para garantizar la escalabilidad y el mantenimiento del código:
 
-Generación Procedural: Algoritmos para la creación de flotas enemigas en una matriz bidimensional (Por el momento es la primera idea para desplegar la flota).
+| Módulo / Clase | Responsabilidad Técnica |
+| :--- | :--- |
+| **AlienInvasion** | Clase controladora principal y gestor del ciclo de vida del juego. |
+| **Settings** | Repositorio centralizado de constantes (velocidades, dimensiones). |
+| **Ship** | Gestión del jugador, movimiento y disparo. |
+| **Alien** | Lógica de enemigos, actualización de posición y detección de bordes. |
+| **Bullet** | Comportamiento de proyectiles y limpieza de memoria. |
+| **GameStats** | Gestión de estados: puntuación, nivel y vidas. |
+| **Scoreboard** | Interfaz para la representación visual de estadísticas. |
 
-Control de Fronteras: Lógica de vectores de dirección y desplazamiento en el eje y al detectar límites espaciales.
+## 3. Estructura del Repositorio
+* `main.cpp`: Punto de entrada del programa.
+* `Code_D2/`: Directorio que contiene la implementación de los módulos (`.cpp` y `.h`).
+* `Practica_3_Lab.xcodeproj/`: Configuración del proyecto para entorno Xcode.
+* `.gitignore`: Configuración para excluir archivos temporales de compilación y binarios.
 
-Resolución de Colisiones: Aplicación de algoritmos que desarrollaremos en clase de aucerdo a las instrucciones de los docentes de la teoria y del laboratorio.  
+## 4. Instrucciones de Ejecución
+
+### Requisitos
+* Compilador compatible con **C++11** o superior.
+* Sistema: macOS (Xcode) o entorno compatible con C++.
+
+### Compilación desde terminal
+Para compilar y ejecutar el proyecto manualmente:
+
+```bash
+g++ -o alien_invasion Code_D2/main.cpp
+./alien_invasion
