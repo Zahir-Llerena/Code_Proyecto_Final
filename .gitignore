@@ -1,0 +1,4 @@
+.DS_Store
+~.docx # Archivos temporales de Word
+*.o # Objetos de C++
+*.out # Ejecutables
