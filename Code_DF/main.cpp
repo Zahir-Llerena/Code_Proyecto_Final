@@ -247,3 +247,33 @@ public:
 };
 
 
+// ============================================================================
+// CLASE PLAYBUTTON (Vector Gráfico Interactivo)
+// ============================================================================
+class PlayButton : public QGraphicsRectItem {
+private:
+    QGraphicsTextItem* text_item;
+
+public:
+    PlayButton(float width, float height, float screen_w, float screen_h) {
+        setRect(0, 0, width, height);
+        setBrush(QBrush(QColor(0, 135, 68)));
+        setPen(Qt::NoPen);
+        setPos((screen_w - width) / 2.0f, (screen_h - height) / 2.0f);
+
+        text_item = new QGraphicsTextItem("PLAY", this);
+        QFont font("Helvetica", 24, QFont::Bold);
+        text_item->setFont(font);
+        text_item->setDefaultTextColor(Qt::white);
+
+        float text_w = text_item->boundingRect().width();
+        float text_h = text_item->boundingRect().height();
+        text_item->setPos((width - text_w) / 2.0f, (height - text_h) / 2.0f);
+    }
+};
+
+
+
+
+
+
