@@ -106,6 +106,39 @@ public:
     }
 };
 
+// ============================================================================
+// 3. CLASE SHIP (Entidad del Jugador)
+// ============================================================================
+class Ship : public QGraphicsPixmapItem {
+public:
+    bool moving_right;
+    bool moving_left;
+    Settings* settings;
+    QRectF screen_rect;
+
+    Ship(Settings* settings_ptr, const QRectF& rect_pantalla, const QPixmap& pixmap_textura)
+        : moving_right(false), moving_left(false), settings(settings_ptr), screen_rect(rect_pantalla)
+    {
+        setPixmap(pixmap_textura);
+        center_ship();
+    }
+
+    void center_ship() {
+        // Ecuación geométrica para centrado exacto en eje X
+        float x_centro = (screen_rect.width() - boundingRect().width()) / 2.0f;
+        float y_inferior = screen_rect.height() - boundingRect().height();
+        setPos(x_centro, y_inferior);
+    }
+
+    void update_position() {
+        if (moving_right && (x() + boundingRect().width() < screen_rect.right())) {
+            moveBy(settings->ship_speed, 0);
+        }
+        if (moving_left && (x() > screen_rect.left())) {
+            moveBy(-settings->ship_speed, 0);
+        }
+    }
+};
 
 
 
