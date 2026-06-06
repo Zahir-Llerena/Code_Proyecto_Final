@@ -1,12 +1,11 @@
 # Alien Invasion: Motor de Juego en C++ 🚀
 
-Proyecto final desarrollado para el curso **Informática II (Grupo 003)** de la Facultad de Ingeniería en Telecomunicaciones de la **Universidad de Antioquia**.
+Proyecto final desarrollado para el curso **Informática II** de la Facultad de Ingeniería en Telecomunicaciones de la **Universidad de Antioquia**.
 
 ## 📝 Descripción
 Este proyecto consiste en la implementación de un motor de juego bidimensional con vista cenital, basado en el paradigma de **Programación Orientada a Objetos (POO)** en C++. El sistema integra un motor de gestión de entidades múltiples (naves, enemigos, proyectiles) y un sistema de control en tiempo real, garantizando la eficiencia en el procesamiento de eventos y lógica de colisiones.
 
-## 👥 Integrantes
-* **Clayder Areiza Pino** - `clayder.areiza@udea.edu.co`
+## 👥 Integrante
 * **Arlington Zahir Llerena** - `zahir.llerena@udea.edu.co`
 
 ## 🏗️ Arquitectura del Sistema
