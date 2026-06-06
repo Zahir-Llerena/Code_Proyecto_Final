@@ -11,7 +11,7 @@
 
 
 // ============================================================================
-// LIBRERÍAS ESTÁNDAR DE C++ (STL)
+// LIBRERÍAS ESTÁNDAR DE C++
 // ============================================================================
 #include <iostream>
 #include <vector>
@@ -19,7 +19,7 @@
 #include <cmath>
 
 // ============================================================================
-// MÓDULOS DE QT6 CORE Y GUI
+// MÓDULOS DE QT6 CORE & GUI
 // ============================================================================
 #include <QApplication>
 #include <QTimer>
@@ -41,7 +41,7 @@
 #include <QFont>
 
 // ============================================================================
-// 1. CLASE SETTINGS (Parámetros Dinámicos y Físicos - Estructura Clásica C++)
+// 1. CLASE SETTINGS (Parámetros Dinámicos y Físicos)
 // ============================================================================
 class Settings {
 public:
@@ -64,7 +64,7 @@ public:
     int fleet_direction;
     int alien_points;
 
-    // Constructor clásico con lista de inicialización para optimización en RAM
+    // Constructor clásico con lista de inicialización
     Settings()
         : screen_width(1200), screen_height(800), bg_color(230, 230, 230),
         ship_limit(3), bullet_width(3), bullet_height(15),
@@ -74,8 +74,7 @@ public:
         inicializar_ajustes_dinamicos();
     }
 
-    // REDISEÑO BÁSICO: Destructor plano no virtual.
-    // Al ser una clase final sin herencia, no requiere la vtable polimórfica.
+    // REDISEÑO BÁSICO: Destructor clasico.
     ~Settings() {}
 
     void inicializar_ajustes_dinamicos() {
@@ -97,7 +96,7 @@ public:
 };
 
 // ============================================================================
-// 2. CLASE GAMESTATS (Máquina de Estados Finita)
+// 2. CLASE GAMESTATS (Máquina de Estados)
 // ============================================================================
 class GameStats {
 public:
@@ -351,7 +350,8 @@ public:
         fleet.clear();
         delete stats;
         delete sb;
-        if (settings) delete settings; // Llama de manera segura al nuevo destructor clásico
+        // Llama de manera segura al nuevo destructor clásico
+        if (settings) delete settings;
     }
 
 protected:
