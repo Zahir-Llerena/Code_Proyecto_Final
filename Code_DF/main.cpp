@@ -273,6 +273,329 @@ public:
 };
 
 
+// ============================================================================
+// 7. MOTOR DE JUEGO PRINCIPAL (Orquestador Estricto)
+// ============================================================================
+class AlienInvasion : public QGraphicsView {
+    Q_OBJECT
+
+private:
+    Settings* settings;
+    GameStats* stats;
+    QGraphicsScene* scene;
+    Scoreboard* sb;
+    Ship* ship;
+    PlayButton* play_button;
+    std::vector<Bullet*> bullets;
+    std::vector<Alien*> fleet;
+    QTimer* game_timer;
+
+    QPixmap pixmap_ship;
+    QPixmap pixmap_alien;
+
+public:
+    AlienInvasion()
+        : QGraphicsView(),
+        settings(new Settings()),
+        stats(new GameStats(settings)),
+        scene(new QGraphicsScene(this)),
+        sb(nullptr),
+        ship(nullptr),
+        play_button(nullptr),
+        game_timer(new QTimer(this))
+    {
+        scene->setSceneRect(0, 0, settings->screen_width, settings->screen_height);
+        scene->setBackgroundBrush(settings->bg_color);
+        setScene(scene);
+
+        setFixedSize(settings->screen_width, settings->screen_height);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setWindowTitle("Alien Invasion - Motor C++ Óptimo");
+
+        // Cálculo de trayectorias absolutas en tiempo de compilación
+        QFileInfo source_info(__FILE__);
+        QDir project_dir = source_info.absoluteDir();
+
+        QString ruta_ship = project_dir.absoluteFilePath("images/ship.bmp");
+        QString ruta_alien = project_dir.absoluteFilePath("images/alien.bmp");
+
+        pixmap_ship.load(ruta_ship);
+        pixmap_alien.load(ruta_alien);
+
+        ship = new Ship(settings, scene->sceneRect(), pixmap_ship);
+        scene->addItem(ship);
+
+        sb = new Scoreboard(scene, stats, settings);
+
+        // Pre-asignamos memoria para el vector de balas
+        bullets.reserve(settings->bullets_allowed);
+
+        _create_fleet();
+
+        play_button = new PlayButton(200, 60, settings->screen_width, settings->screen_height);
+        scene->addItem(play_button);
+
+        setCursor(Qt::ArrowCursor);
+
+        connect(game_timer, &QTimer::timeout, this, &AlienInvasion::game_loop);
+        game_timer->start(16);
+    }
+
+    ~AlienInvasion() {
+        // Prevención de Fugas de Memoria (Memory Leaks)
+        for (Bullet* b : bullets) delete b;
+        bullets.clear();
+        for (Alien* a : fleet) delete a;
+        fleet.clear();
+        delete stats;
+        delete sb;
+        if (settings) delete settings;
+    }
+
+protected:
+    void mousePressEvent(QMouseEvent *event) override {
+        if (!stats->game_active && event->button() == Qt::LeftButton) {
+            QPointF mouse_pos = mapToScene(event->pos());
+
+            if (play_button && play_button->contains(play_button->mapFromScene(mouse_pos))) {
+                stats->game_active = true;
+                stats->reset_stats();
+                settings->initialize_dynamic_settings();
+                sb->update_scoreboard();
+
+                setCursor(Qt::BlankCursor);
+                scene->removeItem(play_button);
+
+                for (Bullet* b : bullets) { scene->removeItem(b); delete b; }
+                bullets.clear();
+                for (Alien* a : fleet) { scene->removeItem(a); delete a; }
+                fleet.clear();
+
+                _create_fleet();
+                ship->center_ship();
+            }
+        }
+        QGraphicsView::mousePressEvent(event);
+    }
+
+    void keyPressEvent(QKeyEvent *event) override {
+        if (!stats->game_active || !ship) return;
+
+        if (event->key() == Qt::Key_Right) {
+            ship->moving_right = true;
+        } else if (event->key() == Qt::Key_Left) {
+            ship->moving_left = true;
+        } else if (event->key() == Qt::Key_Space) {
+            _fire_bullet();
+        } else if (event->key() == Qt::Key_Q) {
+            QApplication::quit();
+        }
+    }
+
+    void keyReleaseEvent(QKeyEvent *event) override {
+        if (!ship) return;
+        if (event->key() == Qt::Key_Right) {
+            ship->moving_right = false;
+        } else if (event->key() == Qt::Key_Left) {
+            ship->moving_left = false;
+        }
+    }
+
+private:
+    void _fire_bullet() {
+        if (static_cast<int>(bullets.size()) < settings->bullets_allowed) {
+            Bullet* new_bullet = new Bullet(settings, ship);
+            scene->addItem(new_bullet);
+            bullets.push_back(new_bullet);
+        }
+    }
+
+    void _update_bullets() {
+        for (auto it = bullets.begin(); it != bullets.end(); ) {
+            (*it)->update_position();
+            if ((*it)->y() + (*it)->rect().height() <= 0) {
+                scene->removeItem(*it);
+                delete *it;
+                it = bullets.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        _check_bullet_alien_collisions();
+    }
+
+    void _check_bullet_alien_collisions() {
+        for (auto b_it = bullets.begin(); b_it != bullets.end(); ) {
+            Bullet* bala_actual = *b_it;
+            bool bala_impacto = false;
+
+            QList<QGraphicsItem*> items_chocados = scene->collidingItems(bala_actual);
+
+            for (QGraphicsItem* item : items_chocados) {
+                Alien* alien_detectado = dynamic_cast<Alien*>(item);
+                if (alien_detectado) {
+                    for (auto a_it = fleet.begin(); a_it != fleet.end(); ++a_it) {
+                        if (*a_it == alien_detectado) {
+                            scene->removeItem(alien_detectado);
+                            delete alien_detectado;
+                            fleet.erase(a_it);
+                            break;
+                        }
+                    }
+
+                    stats->score += settings->alien_points;
+                    if (stats->score > stats->high_score) {
+                        stats->high_score = stats->score;
+                    }
+                    sb->update_scoreboard();
+
+                    scene->removeItem(bala_actual);
+                    delete bala_actual;
+                    b_it = bullets.erase(b_it);
+                    bala_impacto = true;
+                    break;
+                }
+            }
+
+            if (!bala_impacto) {
+                ++b_it;
+            }
+        }
+
+        if (fleet.empty()) {
+            for (Bullet* b : bullets) {
+                scene->removeItem(b);
+                delete b;
+            }
+            bullets.clear();
+
+            stats->level += 1;
+            sb->update_scoreboard();
+
+            settings->increase_speed();
+            _create_fleet();
+        }
+    }
+
+    void _create_fleet() {
+        float alien_width = pixmap_alien.width();
+        float alien_height = pixmap_alien.height();
+
+        float available_space_x = settings->screen_width - (2.0f * alien_width);
+        int number_aliens_x = static_cast<int>(available_space_x / (2.0f * alien_width));
+
+        float ship_height = ship->boundingRect().height();
+        float available_space_y = settings->screen_height - (3.0f * alien_height) - ship_height;
+        int number_rows = static_cast<int>(available_space_y / (2.0f * alien_height));
+
+        // OPTIMIZACIÓN O(1): Reservamos el espacio exacto contiguo en la memoria RAM
+        // evitando reasignaciones costosas durante la creación de la matriz gráfica.
+        fleet.reserve(number_aliens_x * number_rows);
+
+        for (int row_number = 0; row_number < number_rows; ++row_number) {
+            for (int alien_number = 0; alien_number < number_aliens_x; ++alien_number) {
+                _create_alien(alien_number, row_number, alien_width, alien_height);
+            }
+        }
+    }
+
+    void _create_alien(int alien_number, int row_number, float alien_width, float alien_height) {
+        Alien* alien = new Alien(settings, scene->sceneRect(), pixmap_alien);
+        float x_pos = alien_width + 2.0f * alien_width * alien_number;
+        float y_pos = alien_height + 2.0f * alien_height * row_number;
+
+        alien->setPos(x_pos, y_pos);
+        scene->addItem(alien);
+        fleet.push_back(alien);
+    }
+
+    void _update_aliens() {
+        _check_fleet_edges();
+        for (Alien* alien : fleet) {
+            alien->update_position();
+        }
+
+        _check_aliens_collisions_or_bottom();
+    }
+
+    void _check_fleet_edges() {
+        for (Alien* alien : fleet) {
+            if (alien->check_edges()) {
+                _change_fleet_direction();
+                break;
+            }
+        }
+    }
+
+    void _change_fleet_direction() {
+        for (Alien* alien : fleet) {
+            alien->moveBy(0, settings->fleet_drop_speed);
+        }
+        settings->fleet_direction *= -1;
+    }
+
+    void _check_aliens_collisions_or_bottom() {
+        bool invasion_ocurrida = false;
+
+        for (Alien* alien : fleet) {
+            if (alien->collidesWithItem(ship)) {
+                invasion_ocurrida = true;
+                break;
+            }
+            if (alien->y() + alien->boundingRect().height() >= settings->screen_height) {
+                invasion_ocurrida = true;
+                break;
+            }
+        }
+
+        if (invasion_ocurrida) {
+            _ship_hit();
+        }
+    }
+
+    void _ship_hit() {
+        if (stats->ships_left > 1) {
+            stats->ships_left -= 1;
+            sb->update_scoreboard();
+
+            for (Bullet* b : bullets) { scene->removeItem(b); delete b; }
+            bullets.clear();
+            for (Alien* a : fleet) { scene->removeItem(a); delete a; }
+            fleet.clear();
+
+            _create_fleet();
+            ship->center_ship();
+
+            QTimer::singleShot(500, [](){});
+        } else {
+            stats->ships_left = 0;
+            sb->update_scoreboard();
+            stats->game_active = false;
+
+            if (play_button) {
+                scene->addItem(play_button);
+            }
+            setCursor(Qt::ArrowCursor);
+            setWindowTitle("Alien Invasion - ¡GAME OVER! Presiona PLAY para reiniciar");
+        }
+    }
+
+private slots:
+    // El bucle principal de ejecución anclado al reloj de hardware a 16ms
+    void game_loop() {
+        if (!stats->game_active) return;
+
+        if (ship) {
+            ship->update_position();
+        }
+        _update_bullets();
+        _update_aliens();
+    }
+};
+
+
+
 
 
 
