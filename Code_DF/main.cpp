@@ -141,7 +141,28 @@ public:
 };
 
 
+// ============================================================================
+// 4. CLASE BULLET (Cinemática de Proyectiles)
+// ============================================================================
+class Bullet : public QGraphicsRectItem {
+public:
+    Settings* settings;
 
+    Bullet(Settings* settings_ptr, Ship* ship) : settings(settings_ptr) {
+        setRect(0, 0, settings->bullet_width, settings->bullet_height);
+        setBrush(QBrush(settings->bullet_color));
+        setPen(Qt::NoPen);
+
+        // Alineación del cañón respecto al centroide de la nave
+        float x_inicial = ship->x() + (ship->boundingRect().width() / 2.0f) - (settings->bullet_width / 2.0f);
+        float y_inicial = ship->y() - settings->bullet_height;
+        setPos(x_inicial, y_inicial);
+    }
+
+    void update_position() {
+        moveBy(0, -settings->bullet_speed);
+    }
+};
 
 
 
