@@ -1,4 +1,16 @@
 // ============================================================================
+// Universidad de Antioquia
+// Facultad de Ingenieria - Departamento de Telecomunicaciones -
+// @author:
+//         Arlington Zahir Llerena CC: 72 277 711
+// email: zahir.llerena@udea.edu.co
+// Informatica II - Semestre - 3
+// Desafio final: - Juego - Invacion Alien
+// 6 de junio de 2026
+// ============================================================================
+
+
+// ============================================================================
 // LIBRERÍAS ESTÁNDAR DE C++ (STL)
 // ============================================================================
 #include <iostream>
@@ -29,7 +41,7 @@
 #include <QFont>
 
 // ============================================================================
-// 1. CLASE SETTINGS (Parámetros Dinámicos y Físicos)
+// 1. CLASE SETTINGS (Parámetros Dinámicos y Físicos - Estructura Clásica C++)
 // ============================================================================
 class Settings {
 public:
@@ -52,19 +64,21 @@ public:
     int fleet_direction;
     int alien_points;
 
-    // OPTIMIZACIÓN: Lista de inicialización para prevenir doble asignación en memoria
+    // Constructor clásico con lista de inicialización para optimización en RAM
     Settings()
         : screen_width(1200), screen_height(800), bg_color(230, 230, 230),
         ship_limit(3), bullet_width(3), bullet_height(15),
         bullet_color(60, 60, 60), bullets_allowed(17),
         speedup_scale(1.25f), score_scale(1.5f)
     {
-        initialize_dynamic_settings();
+        inicializar_ajustes_dinamicos();
     }
 
-    virtual ~Settings() {}
+    // REDISEÑO BÁSICO: Destructor plano no virtual.
+    // Al ser una clase final sin herencia, no requiere la vtable polimórfica.
+    ~Settings() {}
 
-    void initialize_dynamic_settings() {
+    void inicializar_ajustes_dinamicos() {
         ship_speed = 1.5f;
         bullet_speed = 4.0f;
         alien_speed = 1.0f;
@@ -73,7 +87,7 @@ public:
         alien_points = 50;
     }
 
-    void increase_speed() {
+    void aumentar_velocidad() {
         ship_speed *= speedup_scale;
         bullet_speed *= speedup_scale;
         alien_speed *= speedup_scale;
@@ -81,7 +95,6 @@ public:
         alien_points = static_cast<int>(alien_points * score_scale);
     }
 };
-
 
 // ============================================================================
 // 2. CLASE GAMESTATS (Máquina de Estados Finita)
@@ -96,10 +109,10 @@ public:
     bool game_active;
 
     GameStats(Settings* settings_ptr) : settings(settings_ptr), high_score(0), game_active(false) {
-        reset_stats();
+        reiniciar_estadisticas();
     }
 
-    void reset_stats() {
+    void reiniciar_estadisticas() {
         ships_left = settings->ship_limit;
         score = 0;
         level = 1;
@@ -120,17 +133,16 @@ public:
         : moving_right(false), moving_left(false), settings(settings_ptr), screen_rect(rect_pantalla)
     {
         setPixmap(pixmap_textura);
-        center_ship();
+        centrar_nave();
     }
 
-    void center_ship() {
-        // Ecuación geométrica para centrado exacto en eje X
+    void centrar_nave() {
         float x_centro = (screen_rect.width() - boundingRect().width()) / 2.0f;
         float y_inferior = screen_rect.height() - boundingRect().height();
         setPos(x_centro, y_inferior);
     }
 
-    void update_position() {
+    void actualizar_posicion() {
         if (moving_right && (x() + boundingRect().width() < screen_rect.right())) {
             moveBy(settings->ship_speed, 0);
         }
@@ -139,7 +151,6 @@ public:
         }
     }
 };
-
 
 // ============================================================================
 // 4. CLASE BULLET (Cinemática de Proyectiles)
@@ -153,17 +164,15 @@ public:
         setBrush(QBrush(settings->bullet_color));
         setPen(Qt::NoPen);
 
-        // Alineación del cañón respecto al centroide de la nave
         float x_inicial = ship->x() + (ship->boundingRect().width() / 2.0f) - (settings->bullet_width / 2.0f);
         float y_inicial = ship->y() - settings->bullet_height;
         setPos(x_inicial, y_inicial);
     }
 
-    void update_position() {
+    void actualizar_posicion() {
         moveBy(0, -settings->bullet_speed);
     }
 };
-
 
 // ============================================================================
 // 5. CLASE ALIEN (Invasores y Detección de Bordes)
@@ -179,16 +188,14 @@ public:
         setPixmap(pixmap_textura);
     }
 
-    // El sufijo 'const' asegura a Clang que esta función no altera la memoria del objeto
-    bool check_edges() const {
+    bool tocar_limites() const {
         return (x() + boundingRect().width() >= screen_rect.right() || x() <= screen_rect.left());
     }
 
-    void update_position() {
+    void actualizar_posicion() {
         moveBy(settings->alien_speed * settings->fleet_direction, 0);
     }
 };
-
 
 // ============================================================================
 // 6. CLASE SCOREBOARD (Interfaz de Datos Síncrona)
@@ -235,17 +242,16 @@ public:
         level_text->setPos(settings->screen_width - 250, 50);
         lives_text->setPos(30, 20);
 
-        update_scoreboard();
+        actualizar_marcador();
     }
 
-    void update_scoreboard() {
+    void actualizar_marcador() {
         score_text->setPlainText("SCORE: " + QString::number(stats->score));
         high_score_text->setPlainText("HI-SCORE: " + QString::number(stats->high_score));
         level_text->setPlainText("LEVEL: " + QString::number(stats->level));
         lives_text->setPlainText("SHIPS: " + QString::number(stats->ships_left));
     }
 };
-
 
 // ============================================================================
 // CLASE PLAYBUTTON (Vector Gráfico Interactivo)
@@ -261,7 +267,7 @@ public:
         setPen(Qt::NoPen);
         setPos((screen_w - width) / 2.0f, (screen_h - height) / 2.0f);
 
-        text_item = new QGraphicsTextItem("PLAY", this);
+        text_item = new QGraphicsTextItem("HAGALE PARCERO - PLAY -", this);
         QFont font("Helvetica", 24, QFont::Bold);
         text_item->setFont(font);
         text_item->setDefaultTextColor(Qt::white);
@@ -271,8 +277,6 @@ public:
         text_item->setPos((width - text_w) / 2.0f, (height - text_h) / 2.0f);
     }
 };
-
-
 // ============================================================================
 // 7. MOTOR DE JUEGO PRINCIPAL (Orquestador Estricto)
 // ============================================================================
@@ -311,9 +315,8 @@ public:
         setFixedSize(settings->screen_width, settings->screen_height);
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        setWindowTitle("Alien Invasion - Motor C++ Óptimo");
+        setWindowTitle("Motor C++: Alien Invasion - Informatica II - UdeA.");
 
-        // Cálculo de trayectorias absolutas en tiempo de compilación
         QFileInfo source_info(__FILE__);
         QDir project_dir = source_info.absoluteDir();
 
@@ -328,29 +331,27 @@ public:
 
         sb = new Scoreboard(scene, stats, settings);
 
-        // Pre-asignamos memoria para el vector de balas
         bullets.reserve(settings->bullets_allowed);
 
-        _create_fleet();
+        armar_la_flota();
 
-        play_button = new PlayButton(200, 60, settings->screen_width, settings->screen_height);
+        play_button = new PlayButton(480, 60, settings->screen_width, settings->screen_height);
         scene->addItem(play_button);
 
         setCursor(Qt::ArrowCursor);
 
-        connect(game_timer, &QTimer::timeout, this, &AlienInvasion::game_loop);
+        connect(game_timer, &QTimer::timeout, this, &AlienInvasion::ciclo_principal);
         game_timer->start(16);
     }
 
     ~AlienInvasion() {
-        // Prevención de Fugas de Memoria (Memory Leaks)
         for (Bullet* b : bullets) delete b;
         bullets.clear();
         for (Alien* a : fleet) delete a;
         fleet.clear();
         delete stats;
         delete sb;
-        if (settings) delete settings;
+        if (settings) delete settings; // Llama de manera segura al nuevo destructor clásico
     }
 
 protected:
@@ -360,9 +361,9 @@ protected:
 
             if (play_button && play_button->contains(play_button->mapFromScene(mouse_pos))) {
                 stats->game_active = true;
-                stats->reset_stats();
-                settings->initialize_dynamic_settings();
-                sb->update_scoreboard();
+                stats->reiniciar_estadisticas();
+                settings->inicializar_ajustes_dinamicos();
+                sb->actualizar_marcador();
 
                 setCursor(Qt::BlankCursor);
                 scene->removeItem(play_button);
@@ -372,8 +373,8 @@ protected:
                 for (Alien* a : fleet) { scene->removeItem(a); delete a; }
                 fleet.clear();
 
-                _create_fleet();
-                ship->center_ship();
+                armar_la_flota();
+                ship->centrar_nave();
             }
         }
         QGraphicsView::mousePressEvent(event);
@@ -387,7 +388,7 @@ protected:
         } else if (event->key() == Qt::Key_Left) {
             ship->moving_left = true;
         } else if (event->key() == Qt::Key_Space) {
-            _fire_bullet();
+            disparar_proyectil();
         } else if (event->key() == Qt::Key_Q) {
             QApplication::quit();
         }
@@ -403,7 +404,7 @@ protected:
     }
 
 private:
-    void _fire_bullet() {
+    void disparar_proyectil() {
         if (static_cast<int>(bullets.size()) < settings->bullets_allowed) {
             Bullet* new_bullet = new Bullet(settings, ship);
             scene->addItem(new_bullet);
@@ -411,9 +412,9 @@ private:
         }
     }
 
-    void _update_bullets() {
+    void actualizar_proyectiles() {
         for (auto it = bullets.begin(); it != bullets.end(); ) {
-            (*it)->update_position();
+            (*it)->actualizar_posicion();
             if ((*it)->y() + (*it)->rect().height() <= 0) {
                 scene->removeItem(*it);
                 delete *it;
@@ -422,10 +423,10 @@ private:
                 ++it;
             }
         }
-        _check_bullet_alien_collisions();
+        revisar_impactos_certeros();
     }
 
-    void _check_bullet_alien_collisions() {
+    void revisar_impactos_certeros() {
         for (auto b_it = bullets.begin(); b_it != bullets.end(); ) {
             Bullet* bala_actual = *b_it;
             bool bala_impacto = false;
@@ -448,7 +449,7 @@ private:
                     if (stats->score > stats->high_score) {
                         stats->high_score = stats->score;
                     }
-                    sb->update_scoreboard();
+                    sb->actualizar_marcador();
 
                     scene->removeItem(bala_actual);
                     delete bala_actual;
@@ -471,14 +472,14 @@ private:
             bullets.clear();
 
             stats->level += 1;
-            sb->update_scoreboard();
+            sb->actualizar_marcador();
 
-            settings->increase_speed();
-            _create_fleet();
+            settings->aumentar_velocidad();
+            armar_la_flota();
         }
     }
 
-    void _create_fleet() {
+    void armar_la_flota() {
         float alien_width = pixmap_alien.width();
         float alien_height = pixmap_alien.height();
 
@@ -489,18 +490,16 @@ private:
         float available_space_y = settings->screen_height - (3.0f * alien_height) - ship_height;
         int number_rows = static_cast<int>(available_space_y / (2.0f * alien_height));
 
-        // OPTIMIZACIÓN O(1): Reservamos el espacio exacto contiguo en la memoria RAM
-        // evitando reasignaciones costosas durante la creación de la matriz gráfica.
         fleet.reserve(number_aliens_x * number_rows);
 
         for (int row_number = 0; row_number < number_rows; ++row_number) {
             for (int alien_number = 0; alien_number < number_aliens_x; ++alien_number) {
-                _create_alien(alien_number, row_number, alien_width, alien_height);
+                ubicar_un_alien(alien_number, row_number, alien_width, alien_height);
             }
         }
     }
 
-    void _create_alien(int alien_number, int row_number, float alien_width, float alien_height) {
+    void ubicar_un_alien(int alien_number, int row_number, float alien_width, float alien_height) {
         Alien* alien = new Alien(settings, scene->sceneRect(), pixmap_alien);
         float x_pos = alien_width + 2.0f * alien_width * alien_number;
         float y_pos = alien_height + 2.0f * alien_height * row_number;
@@ -510,32 +509,31 @@ private:
         fleet.push_back(alien);
     }
 
-    void _update_aliens() {
-        _check_fleet_edges();
+    void actualizar_la_flota() {
+        revisar_limites_pantalla();
         for (Alien* alien : fleet) {
-            alien->update_position();
+            alien->actualizar_posicion();
         }
-
-        _check_aliens_collisions_or_bottom();
+        revisar_invasion_o_choques();
     }
 
-    void _check_fleet_edges() {
+    void revisar_limites_pantalla() {
         for (Alien* alien : fleet) {
-            if (alien->check_edges()) {
-                _change_fleet_direction();
+            if (alien->tocar_limites()) {
+                pegar_la_vuelta_y_descender();
                 break;
             }
         }
     }
 
-    void _change_fleet_direction() {
+    void pegar_la_vuelta_y_descender() {
         for (Alien* alien : fleet) {
             alien->moveBy(0, settings->fleet_drop_speed);
         }
         settings->fleet_direction *= -1;
     }
 
-    void _check_aliens_collisions_or_bottom() {
+    void revisar_invasion_o_choques() {
         bool invasion_ocurrida = false;
 
         for (Alien* alien : fleet) {
@@ -550,27 +548,27 @@ private:
         }
 
         if (invasion_ocurrida) {
-            _ship_hit();
+            sufrir_una_baja();
         }
     }
 
-    void _ship_hit() {
+    void sufrir_una_baja() {
         if (stats->ships_left > 1) {
             stats->ships_left -= 1;
-            sb->update_scoreboard();
+            sb->actualizar_marcador();
 
             for (Bullet* b : bullets) { scene->removeItem(b); delete b; }
             bullets.clear();
             for (Alien* a : fleet) { scene->removeItem(a); delete a; }
             fleet.clear();
 
-            _create_fleet();
-            ship->center_ship();
+            armar_la_flota();
+            ship->centrar_nave();
 
             QTimer::singleShot(500, [](){});
         } else {
             stats->ships_left = 0;
-            sb->update_scoreboard();
+            sb->actualizar_marcador();
             stats->game_active = false;
 
             if (play_button) {
@@ -582,15 +580,14 @@ private:
     }
 
 private slots:
-    // El bucle principal de ejecución anclado al reloj de hardware a 16ms
-    void game_loop() {
+    void ciclo_principal() {
         if (!stats->game_active) return;
 
         if (ship) {
-            ship->update_position();
+            ship->actualizar_posicion();
         }
-        _update_bullets();
-        _update_aliens();
+        actualizar_proyectiles();
+        actualizar_la_flota();
     }
 };
 
@@ -608,6 +605,15 @@ int main(int argc, char *argv[]) {
 
 #include "main.moc"
 
+
+// ============================================================================
+// Muchas gracias senor profesor por la oportunidad de realizar este trabajo.
+// Desafortunadamente no pude darles respuesta a todos los item que solicito
+// en la guia. Quede frustrado por el tiempo inivertido para reproducir una
+// pista en formato .mp3 durante la ejecucion del juego y al final no puede
+// adaptar el sonido al juego. No obstante, creo que le di respuestas a los
+// item  mas importantes en la iniciativa. Agradecemos el espacio brindado.
+// ============================================================================
 
 
 
