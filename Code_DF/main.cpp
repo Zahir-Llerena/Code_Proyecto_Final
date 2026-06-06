@@ -81,3 +81,38 @@ public:
         alien_points = static_cast<int>(alien_points * score_scale);
     }
 };
+
+
+// ============================================================================
+// 2. CLASE GAMESTATS (Máquina de Estados Finita)
+// ============================================================================
+class GameStats {
+public:
+    Settings* settings;
+    int ships_left;
+    int score;
+    int level;
+    int high_score;
+    bool game_active;
+
+    GameStats(Settings* settings_ptr) : settings(settings_ptr), high_score(0), game_active(false) {
+        reset_stats();
+    }
+
+    void reset_stats() {
+        ships_left = settings->ship_limit;
+        score = 0;
+        level = 1;
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
