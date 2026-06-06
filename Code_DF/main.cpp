@@ -594,6 +594,19 @@ private slots:
     }
 };
 
+// ============================================================================
+// 8. PUNTO DE ENTRADA PRINCIPAL DE LA APLICACIÓN
+// ============================================================================
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+
+    AlienInvasion game;
+    game.show();
+
+    return app.exec();
+}
+
+#include "main.moc"
 
 
 
