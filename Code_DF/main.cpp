@@ -165,8 +165,85 @@ public:
 };
 
 
+// ============================================================================
+// 5. CLASE ALIEN (Invasores y Detección de Bordes)
+// ============================================================================
+class Alien : public QGraphicsPixmapItem {
+public:
+    Settings* settings;
+    QRectF screen_rect;
+
+    Alien(Settings* settings_ptr, const QRectF& rect_pantalla, const QPixmap& pixmap_textura)
+        : settings(settings_ptr), screen_rect(rect_pantalla)
+    {
+        setPixmap(pixmap_textura);
+    }
+
+    // El sufijo 'const' asegura a Clang que esta función no altera la memoria del objeto
+    bool check_edges() const {
+        return (x() + boundingRect().width() >= screen_rect.right() || x() <= screen_rect.left());
+    }
+
+    void update_position() {
+        moveBy(settings->alien_speed * settings->fleet_direction, 0);
+    }
+};
 
 
+// ============================================================================
+// 6. CLASE SCOREBOARD (Interfaz de Datos Síncrona)
+// ============================================================================
+class Scoreboard {
+private:
+    QGraphicsScene* scene;
+    GameStats* stats;
+    Settings* settings;
 
+    QGraphicsTextItem* score_text;
+    QGraphicsTextItem* high_score_text;
+    QGraphicsTextItem* level_text;
+    QGraphicsTextItem* lives_text;
+
+public:
+    Scoreboard(QGraphicsScene* scene_ptr, GameStats* stats_ptr, Settings* settings_ptr)
+        : scene(scene_ptr), stats(stats_ptr), settings(settings_ptr)
+    {
+        QFont font("Courier", 20, QFont::Bold);
+
+        score_text = new QGraphicsTextItem();
+        high_score_text = new QGraphicsTextItem();
+        level_text = new QGraphicsTextItem();
+        lives_text = new QGraphicsTextItem();
+
+        score_text->setFont(font);
+        high_score_text->setFont(font);
+        level_text->setFont(font);
+        lives_text->setFont(font);
+
+        score_text->setDefaultTextColor(QColor(30, 30, 30));
+        high_score_text->setDefaultTextColor(QColor(30, 30, 30));
+        level_text->setDefaultTextColor(QColor(30, 30, 30));
+        lives_text->setDefaultTextColor(QColor(200, 30, 30));
+
+        scene->addItem(score_text);
+        scene->addItem(high_score_text);
+        scene->addItem(level_text);
+        scene->addItem(lives_text);
+
+        score_text->setPos(settings->screen_width - 250, 20);
+        high_score_text->setPos(settings->screen_width / 2 - 100, 20);
+        level_text->setPos(settings->screen_width - 250, 50);
+        lives_text->setPos(30, 20);
+
+        update_scoreboard();
+    }
+
+    void update_scoreboard() {
+        score_text->setPlainText("SCORE: " + QString::number(stats->score));
+        high_score_text->setPlainText("HI-SCORE: " + QString::number(stats->high_score));
+        level_text->setPlainText("LEVEL: " + QString::number(stats->level));
+        lives_text->setPlainText("SHIPS: " + QString::number(stats->ships_left));
+    }
+};
 
 
